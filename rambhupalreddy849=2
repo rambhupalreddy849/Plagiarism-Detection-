@@ -1,0 +1,86 @@
+from tkinter import filedialog
+from tkinter import *
+import math
+import re
+from collections import Counter
+import nltk
+
+WORD = re.compile(r"\w+")
+
+
+
+
+def browse_button():
+    # Allow user to select a directory and store it in global var
+    # called folder_path(main one)
+    global folder_path
+    filename = filedialog.askdirectory()
+    folder_path.set(filename)
+    print(filename)
+
+
+def get_cosine(vec1, vec2):
+    #print(vec1.keys())
+    #print(vec2.keys())
+    intersection = set(vec1.keys()) & set(vec2.keys())
+    #print(intersection)
+    numerator = sum([vec1[x] * vec2[x] for x in intersection])
+    #print(numerator)
+    sum1 = sum([vec1[x] ** 2 for x in list(vec1.keys())])
+    sum2 = sum([vec2[x] ** 2 for x in list(vec2.keys())])
+    denominator = math.sqrt(sum1) * math.sqrt(sum2)
+
+    if not denominator:
+        return 0.0
+    else:
+        return float(numerator) / denominator
+
+def text_to_vector(text):
+    #words = WORD.findall(text)
+    words=nltk.word_tokenize(text)
+    #print("this is word",words)
+    return Counter(words)
+
+def submitpressed():
+    text1 = t1.read().lower()
+    reference = ref.read().lower()
+    #print("tex1",text1)
+    #print("ref",reference)
+    vector1 = text_to_vector(text1)
+    vector3= text_to_vector(reference)
+    #print(vector1)
+    #print(vector3)
+    cosine = get_cosine(vector1,vector3)
+    #printing
+    print(cosine)
+
+root = Tk()
+folder_path = StringVar()
+lbl1 = Label(master=root,textvariable=folder_path)
+lbl1.grid(row=0, column=1)
+button1 = Button(text="A1", command=browse_button)
+button1.grid(row=0, column=3)
+
+root.withdraw()
+root.call('wm', 'attributes', '.', '-topmost', True)
+files = filedialog.askopenfilename(multiple=True)
+#gui tk
+var = root.tk.splitlist(files)
+filePaths = []
+for f in var:
+    filePaths.append(f)
+t1=open(filePaths[0],"r")
+ref=open(filePaths[0],"r")
+for i in range(len(filePaths)-1):
+    for i1 in range(i+1,len(filePaths)):
+        t1=open(filePaths[i],"r")
+        ref=open(filePaths[i1],"r")
+        al=filePaths[i].split("/")
+        a2=filePaths[i1].split("/")
+        #print(filePaths[i])
+        print(al[-1],a2[-1],end="  ")
+        submitpressed()
+
+# TESTING
+#t1.insert(0,"This is an apple.")
+#t2.insert(0,"This is a check")
